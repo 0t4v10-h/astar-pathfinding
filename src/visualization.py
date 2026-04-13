@@ -61,11 +61,46 @@ def obter_posicao_mouse(pos):
     linha = y // TAMANHO_CELULA
     coluna = x // TAMANHO_CELULA
     return linha, coluna
+
+def desenhar_painel_info(tela, caminho, fechados):
+    fonte = pygame.font.SysFont(None, 26)
+
+    x_base = COLUNAS * TAMANHO_CELULA + 10
+    y = 20
+
+    textos = [
+        "CONTROLES: ",
+        "S + clique = Início",
+        "G + clique = Objetivo",
+        "Clique = Obstáculos",
+        "R = Reset",
+        "ESPAÇO = Execução",
+        ""
+    ]
+
+    if caminho:
+        textos += [
+            f"Caminho: {len(caminho)}",
+            f"Nós explorados: {len(fechados)}",
+            f"Custo: {len(caminho) - 1}",
+        ]
+
+    else:
+        textos += [
+            "Aguardando execução..."
+        ]
+
+    for texto in textos:
+        superficie = fonte.render(texto, True, (0, 0, 0))
+        tela.blit(superficie, (x_base, y))
+        y += 30
             
 def executar_visualizacao():
     pygame.init()
 
-    largura = COLUNAS * TAMANHO_CELULA
+    LARGURA_INFO = 200
+
+    largura = COLUNAS * TAMANHO_CELULA + LARGURA_INFO
     altura = LINHAS * TAMANHO_CELULA
 
     tela = pygame.display.set_mode((largura, altura))
@@ -133,11 +168,21 @@ def executar_visualizacao():
                     caminho = estado["caminho"]
                     gerador = None
 
-                    pygame.time.delay(500)
+                    pygame.time.delay(200)
 
             except StopIteration:
                 gerador = None
 
         tela.fill(BRANCO)
+
         desenhar_grid(tela, grid, caminho, inicio, objetivo, abertos, fechados)
+        
+        pygame.draw.rect(
+            tela,
+            (230, 230, 230),
+            (COLUNAS * TAMANHO_CELULA, 0, LARGURA_INFO, altura)
+        )
+
+        desenhar_painel_info(tela, caminho, fechados)
+
         pygame.display.flip()
