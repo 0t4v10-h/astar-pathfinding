@@ -62,8 +62,8 @@ def obter_posicao_mouse(pos):
     coluna = x // TAMANHO_CELULA
     return linha, coluna
 
-def desenhar_painel_info(tela, caminho, fechados):
-    fonte = pygame.font.SysFont(None, 26)
+def desenhar_painel_info(tela, caminho, fechados, velocidade):
+    fonte = pygame.font.SysFont(None, 24)
 
     x_base = COLUNAS * TAMANHO_CELULA + 10
     y = 20
@@ -74,7 +74,8 @@ def desenhar_painel_info(tela, caminho, fechados):
         "G + clique = Objetivo",
         "Clique = Obstáculos",
         "R = Reset",
-        "ESPAÇO = Execução",
+        "Espaço = Execução",
+        "Setas (CIMA/BAIXO) = Velocidade",
         ""
     ]
 
@@ -90,6 +91,8 @@ def desenhar_painel_info(tela, caminho, fechados):
             "Aguardando execução..."
         ]
 
+    textos.append(f"Velocidade: {velocidade} ms")
+
     for texto in textos:
         superficie = fonte.render(texto, True, (0, 0, 0))
         tela.blit(superficie, (x_base, y))
@@ -98,7 +101,7 @@ def desenhar_painel_info(tela, caminho, fechados):
 def executar_visualizacao():
     pygame.init()
 
-    LARGURA_INFO = 200
+    LARGURA_INFO = 300
 
     largura = COLUNAS * TAMANHO_CELULA + LARGURA_INFO
     altura = LINHAS * TAMANHO_CELULA
@@ -117,6 +120,8 @@ def executar_visualizacao():
 
     modo = None
 
+    velocidade = 100
+
     while True:
         for evento in pygame.event.get():
             if evento.type == pygame.QUIT:
@@ -126,14 +131,17 @@ def executar_visualizacao():
             if evento.type == pygame.KEYDOWN:
                 if evento.key == pygame.K_s:
                     modo = "inicio"
+
                 elif evento.key == pygame.K_g:
                     modo = "objetivo"
+
                 elif evento.key == pygame.K_SPACE:
                     if inicio and objetivo:
                         caminho = None
                         abertos = []
                         fechados = []
                         gerador = astar_animado(grid, inicio, objetivo)
+
                 elif evento.key == pygame.K_r:
                     grid = criar_grid()
                     inicio = None
@@ -142,6 +150,12 @@ def executar_visualizacao():
                     gerador = None
                     abertos = []
                     fechados = []
+
+                elif evento.key == pygame.K_UP:
+                    velocidade = max(10, velocidade - 10)
+
+                elif evento.key == pygame.K_DOWN:
+                    velocidade = min(1000, velocidade + 10)
 
             if pygame.mouse.get_pressed()[0]:
                 pos = pygame.mouse.get_pos()
@@ -168,7 +182,7 @@ def executar_visualizacao():
                     caminho = estado["caminho"]
                     gerador = None
 
-                    pygame.time.delay(200)
+                    pygame.time.delay(velocidade)
 
             except StopIteration:
                 gerador = None
@@ -183,6 +197,6 @@ def executar_visualizacao():
             (COLUNAS * TAMANHO_CELULA, 0, LARGURA_INFO, altura)
         )
 
-        desenhar_painel_info(tela, caminho, fechados)
+        desenhar_painel_info(tela, caminho, fechados, velocidade)
 
         pygame.display.flip()
