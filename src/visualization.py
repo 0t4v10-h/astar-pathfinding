@@ -1,6 +1,6 @@
 import pygame
 import sys
-from src.astar import astar
+from src.astar import astar_animado
 
 TAMANHO_CELULA = 60
 LINHAS = 10
@@ -12,23 +12,36 @@ AZUL = (0, 0, 255)
 VERMELHO = (255, 0, 0)
 AMARELO = (255, 255, 0)
 CINZA = (200, 200, 200)
+CINZA_CLARO = (180, 180, 180)
+VERDE = (0, 255, 0)
 
 def criar_grid():
     return [[0 for _ in range(COLUNAS)] for _ in range(LINHAS)]
 
-def desenhar_grid(tela, grid, caminho, inicio, objetivo):
+def desenhar_grid(tela, grid, caminho, inicio, objetivo, abertos, fechados):
     for i in range(LINHAS):
         for j in range(COLUNAS):
+            pos = (i,j)
             cor = BRANCO
 
             if grid[i][j] == 1:
                 cor = PRETO
-            elif (i,j) == inicio:
+
+            elif pos == inicio:
                 cor = AZUL
-            elif (i,j) == objetivo:
+
+            elif pos == objetivo:
                 cor = VERMELHO
-            elif caminho and (i,j) in caminho:
+
+            elif caminho and pos in caminho:
                 cor = AMARELO
+
+            elif pos in fechados:
+                cor = CINZA
+
+            elif pos in abertos:
+                cor = VERDE
+
 
             pygame.draw.rect(
                 tela,
@@ -58,6 +71,10 @@ def executar_visualizacao():
     tela = pygame.display.set_mode((largura, altura))
     pygame.display.set_caption("A* Pathfinding Interativo")
 
+    gerador = None
+    abertos = []
+    fechados = []
+
     grid = criar_grid()
     inicio = None
     objetivo = None
@@ -78,12 +95,18 @@ def executar_visualizacao():
                     modo = "objetivo"
                 elif evento.key == pygame.K_SPACE:
                     if inicio and objetivo:
-                        caminho = astar(grid, inicio, objetivo)
+                        caminho = None
+                        abertos = []
+                        fechados = []
+                        gerador = astar_animado(grid, inicio, objetivo)
                 elif evento.key == pygame.K_r:
                     grid = criar_grid()
                     inicio = None
                     objetivo = None
                     caminho = None
+                    gerador = None
+                    abertos = []
+                    fechados = []
 
             if pygame.mouse.get_pressed()[0]:
                 pos = pygame.mouse.get_pos()
@@ -97,11 +120,24 @@ def executar_visualizacao():
                         objetivo = (linha, coluna)
                         modo = None
                     else:
-                        if grid[linha][coluna] == 0:
-                            grid[linha][coluna] = 1
-                        else:
-                            grid[linha][coluna] = 0
+                        grid[linha][coluna] = 1 if grid[linha][coluna] == 0 else 0
+
+        if gerador:
+            try:
+                estado = next(gerador)
+
+                abertos = estado.get("abertos", [])
+                fechados = estado.get("fechados", [])
+
+                if estado.get("caminho"):
+                    caminho = estado["caminho"]
+                    gerador = None
+
+                    pygame.time.delay(500)
+
+            except StopIteration:
+                gerador = None
 
         tela.fill(BRANCO)
-        desenhar_grid(tela, grid, caminho, inicio, objetivo)
+        desenhar_grid(tela, grid, caminho, inicio, objetivo, abertos, fechados)
         pygame.display.flip()

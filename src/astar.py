@@ -39,7 +39,7 @@ def reconstruir_caminho(veio_de, atual):
     caminho.reverse()
     return caminho
 
-def astar(grid, inicio, objetivo):
+def astar_animado(grid, inicio, objetivo):
     """
     Implementação do algoritmo A*.
     :param grid: matriz 2D (0 = livre, 1 = obstáculo)
@@ -61,7 +61,13 @@ def astar(grid, inicio, objetivo):
         atual = heapq.heappop(lista_aberta)[1]
 
         if atual == objetivo:
-            return reconstruir_caminho(veio_de, atual)
+            caminho =  reconstruir_caminho(veio_de, atual)
+            yield {
+                "caminho": caminho,
+                "abertos": lista_aberta,
+                "fechados": conjunto_fechado
+            }
+            return
         
         conjunto_fechado.add(atual)
 
@@ -78,4 +84,9 @@ def astar(grid, inicio, objetivo):
 
                 heapq.heappush(lista_aberta, (custo_f[vizinho], vizinho))
 
-    return None
+        yield {
+            "atual": atual,
+            "abertos": [n[1] for n in lista_aberta],
+            "caminho": None
+        }
+
