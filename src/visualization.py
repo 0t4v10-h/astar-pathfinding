@@ -14,11 +14,12 @@ AMARELO = (255, 255, 0)
 CINZA = (200, 200, 200)
 CINZA_CLARO = (180, 180, 180)
 VERDE = (0, 255, 0)
+ROXO = (160, 32, 240)
 
 def criar_grid():
     return [[0 for _ in range(COLUNAS)] for _ in range(LINHAS)]
 
-def desenhar_grid(tela, grid, caminho, inicio, objetivo, abertos, fechados):
+def desenhar_grid(tela, grid, caminho, inicio, objetivo, abertos, fechados, atual):
     for i in range(LINHAS):
         for j in range(COLUNAS):
             pos = (i,j)
@@ -33,11 +34,14 @@ def desenhar_grid(tela, grid, caminho, inicio, objetivo, abertos, fechados):
             elif pos == objetivo:
                 cor = VERMELHO
 
+            elif pos == atual:
+                cor = ROXO
+
             elif caminho and pos in caminho:
                 cor = AMARELO
 
             elif pos in fechados:
-                cor = CINZA
+                cor = CINZA_CLARO
 
             elif pos in abertos:
                 cor = VERDE
@@ -110,6 +114,7 @@ def executar_visualizacao():
     pygame.display.set_caption("A* Pathfinding Interativo")
 
     gerador = None
+    atual = None
     abertos = []
     fechados = []
 
@@ -148,6 +153,7 @@ def executar_visualizacao():
                     objetivo = None
                     caminho = None
                     gerador = None
+                    atual = None
                     abertos = []
                     fechados = []
 
@@ -175,6 +181,7 @@ def executar_visualizacao():
             try:
                 estado = next(gerador)
 
+                atual = estado.get("atual", None)
                 abertos = estado.get("abertos", [])
                 fechados = estado.get("fechados", [])
 
@@ -189,7 +196,7 @@ def executar_visualizacao():
 
         tela.fill(BRANCO)
 
-        desenhar_grid(tela, grid, caminho, inicio, objetivo, abertos, fechados)
+        desenhar_grid(tela, grid, caminho, inicio, objetivo, abertos, fechados, atual)
         
         pygame.draw.rect(
             tela,
