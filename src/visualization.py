@@ -1,6 +1,7 @@
 import pygame
 import sys
 from src.astar import astar_animado
+from src.grid import Grid
 
 TAMANHO_CELULA = 60
 LINHAS = 10
@@ -16,16 +17,15 @@ CINZA_CLARO = (180, 180, 180)
 VERDE = (0, 255, 0)
 ROXO = (160, 32, 240)
 
-def criar_grid():
-    return [[0 for _ in range(COLUNAS)] for _ in range(LINHAS)]
-
 def desenhar_grid(tela, grid, caminho, inicio, objetivo, abertos, fechados, atual):
+    matriz = grid.matriz
+    
     for i in range(LINHAS):
         for j in range(COLUNAS):
             pos = (i,j)
             cor = BRANCO
 
-            if grid[i][j] == 1:
+            if matriz[i][j] == 1:
                 cor = PRETO
 
             elif pos == inicio:
@@ -118,7 +118,7 @@ def executar_visualizacao():
     abertos = []
     fechados = []
 
-    grid = criar_grid()
+    grid = Grid(LINHAS, COLUNAS)
     inicio = None
     objetivo = None
     caminho = None
@@ -145,10 +145,10 @@ def executar_visualizacao():
                         caminho = None
                         abertos = []
                         fechados = []
-                        gerador = astar_animado(grid, inicio, objetivo)
+                        gerador = astar_animado(grid.get_matriz(), inicio, objetivo)
 
                 elif evento.key == pygame.K_r:
-                    grid = criar_grid()
+                    grid.resetar()
                     inicio = None
                     objetivo = None
                     caminho = None
@@ -175,7 +175,7 @@ def executar_visualizacao():
                         objetivo = (linha, coluna)
                         modo = None
                     else:
-                        grid[linha][coluna] = 1 if grid[linha][coluna] == 0 else 0
+                        grid.alternar_obstaculo(linha, coluna)
 
         if gerador:
             try:
